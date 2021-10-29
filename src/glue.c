@@ -137,12 +137,14 @@ int main(int argc, char* argv[])
 	{
 		printf("xmodem6 [-h]\n");
 		printf("        [-q]\n");
-		printf("        [-v] [-p port_number] [-b baud_rate] [-r|-x] [-k]\n");
+		printf("        [-v] [-p port_number] [-b baud_rate] [-f fn] [-r|-x] [-k]\n");
 		printf("\n");
 		printf("        -h             : show usage\n");
 		printf("        -q             : query existing serial port\n");
+		printf("        -v             : verbose\n");
 		printf("        -p port_number : specify serial port number, such as 6 (i.e. \\\\.\\COM6)\n");
 		printf("        -b baud_rate   : specify baud rate, such as 115200\n");
+		printf("        -f fn          : specify the filename, such as input.txt or \"C:\\Users\\Leo\\Downloads\\sample data\\output.txt\"\n");
 		printf("        -r             : lauch xmodem receiver\n");
 		printf("        -x             : lauch xmodem transmitter\n");
 		printf("        -k             : lauch xmodem transmitter using XMODEM-1K, otherwise, XMODEM-CRC (by default)\n");
