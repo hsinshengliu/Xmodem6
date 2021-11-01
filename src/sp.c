@@ -14,77 +14,77 @@ void sp_verb_set(void)
 
 static BOOL query_device_description(HDEVINFO hDevInfoSet, SP_DEVINFO_DATA* devInfo, char* buf, const size_t BUF_SZ, size_t* nReturn)
 {
-    DWORD dwType = 0;
-    DWORD nBytes = 0;
-    BOOL ret = FALSE;
-    ret = SetupDiGetDeviceRegistryProperty(hDevInfoSet, devInfo, SPDRP_DEVICEDESC, &dwType, (PBYTE)buf, BUF_SZ, &nBytes);
-    if(ret == FALSE)
-    {
-        if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-        {
-            return FALSE;
-        }
-    }
-    if (dwType != REG_SZ)
-    {
-        SetLastError(ERROR_INVALID_DATA);
-        return FALSE;
-    }
-    *nReturn = (size_t)nBytes;
-    return TRUE;
+	DWORD dwType = 0;
+	DWORD nBytes = 0;
+	BOOL ret = FALSE;
+	ret = SetupDiGetDeviceRegistryProperty(hDevInfoSet, devInfo, SPDRP_DEVICEDESC, &dwType, (PBYTE)buf, BUF_SZ, &nBytes);
+	if(ret == FALSE)
+	{
+		if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+		{
+			return FALSE;
+		}
+	}
+	if (dwType != REG_SZ)
+	{
+		SetLastError(ERROR_INVALID_DATA);
+		return FALSE;
+	}
+	*nReturn = (size_t)nBytes;
+	return TRUE;
 }
 
 static BOOL query_registry_value(HKEY hKey, LPCTSTR lpValueName, char* buf, const size_t BUF_SZ, size_t* nReturn)
 {
-    DWORD dwType = 0;
-    DWORD nBytes = (DWORD)BUF_SZ;
-    LSTATUS nStatus = RegQueryValueEx(hKey, lpValueName, NULL, &dwType, (LPBYTE)buf, &nBytes);
-    if (nStatus != ERROR_SUCCESS)
-    {
-        SetLastError(nStatus);
-        return FALSE;
-    }
-    if ((dwType != REG_SZ) && (dwType != REG_EXPAND_SZ))
-    {
-        SetLastError(ERROR_INVALID_DATA);
-        return FALSE;
-    }
-    if ((nBytes % sizeof(TCHAR)) != 0)
-    {
-        SetLastError(ERROR_INVALID_DATA);
-        return FALSE;
-    }
-    *nReturn = (size_t)nBytes;
-    if (buf[(nBytes / sizeof(TCHAR)) - 1] != _T('\0'))
-    {
-        buf[(nBytes / sizeof(TCHAR))] = _T('\0');
-        *nReturn = (nBytes / sizeof(TCHAR)) - 1;
-    }
-    return TRUE;
+	DWORD dwType = 0;
+	DWORD nBytes = (DWORD)BUF_SZ;
+	LSTATUS nStatus = RegQueryValueEx(hKey, lpValueName, NULL, &dwType, (LPBYTE)buf, &nBytes);
+	if (nStatus != ERROR_SUCCESS)
+	{
+		SetLastError(nStatus);
+		return FALSE;
+	}
+	if ((dwType != REG_SZ) && (dwType != REG_EXPAND_SZ))
+	{
+		SetLastError(ERROR_INVALID_DATA);
+		return FALSE;
+	}
+	if ((nBytes % sizeof(TCHAR)) != 0)
+	{
+		SetLastError(ERROR_INVALID_DATA);
+		return FALSE;
+	}
+	*nReturn = (size_t)nBytes;
+	if (buf[(nBytes / sizeof(TCHAR)) - 1] != _T('\0'))
+	{
+		buf[(nBytes / sizeof(TCHAR))] = _T('\0');
+		*nReturn = (nBytes / sizeof(TCHAR)) - 1;
+	}
+	return TRUE;
 }
 
 static BOOL query_registry_for_port_name(HKEY hKey, int* nPort)
 {
-    BOOL bAdded = FALSE;
-    do
-    {
-        char buf[8192] = {'\0'};
-        size_t len = 0;
-        BOOL ret = query_registry_value(hKey, _T("PortName"), buf, sizeof(buf), &len);
-        if(ret == FALSE)
-        {
-            break;
-        }
-        if(len > 3)
-        {
-            if(_tcsnicmp(buf, _T("COM"), 3) == 0)
-            {
-                *nPort = _ttoi(buf + 3);
-                bAdded = TRUE;
-            }
-        }
-    } while(0);
-    return bAdded;
+	BOOL bAdded = FALSE;
+	do
+	{
+		char buf[8192] = {'\0'};
+		size_t len = 0;
+		BOOL ret = query_registry_value(hKey, _T("PortName"), buf, sizeof(buf), &len);
+		if(ret == FALSE)
+		{
+			break;
+		}
+		if(len > 3)
+		{
+			if(_tcsnicmp(buf, _T("COM"), 3) == 0)
+			{
+				*nPort = _ttoi(buf + 3);
+				bAdded = TRUE;
+			}
+		}
+	} while(0);
+	return bAdded;
 }
 
 int sp_query(int** port_number_list, int* port_cnt)
@@ -94,10 +94,10 @@ int sp_query(int** port_number_list, int* port_cnt)
 	int* list = NULL;
 	int cnt = 0;
 
-    const GUID guid = GUID_DEVINTERFACE_COMPORT;
-    DWORD dwFlags = DIGCF_PRESENT | DIGCF_DEVICEINTERFACE;
-    do
-    {
+	const GUID guid = GUID_DEVINTERFACE_COMPORT;
+	DWORD dwFlags = DIGCF_PRESENT | DIGCF_DEVICEINTERFACE;
+	do
+	{
 		if(port_number_list == NULL || port_cnt == NULL)
 		{
 			break;
@@ -105,34 +105,34 @@ int sp_query(int** port_number_list, int* port_cnt)
 		list = NULL;
 		cnt = 0;
 
-        HDEVINFO hDevInfoSet = SetupDiGetClassDevs(&guid, NULL, NULL, dwFlags);
-        if (hDevInfoSet == INVALID_HANDLE_VALUE)
-        {
-            break;
-        }
-        BOOL bMoreItems = TRUE;
-        int nIndex = 0;
-        while (bMoreItems)
-        {
-            SP_DEVINFO_DATA devInfo = {.cbSize = 0};
-            devInfo.cbSize = sizeof(SP_DEVINFO_DATA);
-            BOOL ret = SetupDiEnumDeviceInfo(hDevInfoSet, nIndex, &devInfo);
-            if(ret)
-            {
-                BOOL bAdded = FALSE;
-                HKEY hKey = NULL;
-                hKey = SetupDiOpenDevRegKey(hDevInfoSet, &devInfo, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_QUERY_VALUE);
-                if(hKey != INVALID_HANDLE_VALUE)
-                {
-                    int nPort = 0;
-                    int queried = query_registry_for_port_name(hKey, &nPort);
-                    if(queried == TRUE)
-                    {
+		HDEVINFO hDevInfoSet = SetupDiGetClassDevs(&guid, NULL, NULL, dwFlags);
+		if (hDevInfoSet == INVALID_HANDLE_VALUE)
+		{
+			break;
+		}
+		BOOL bMoreItems = TRUE;
+		int nIndex = 0;
+		while (bMoreItems)
+		{
+			SP_DEVINFO_DATA devInfo = {.cbSize = 0};
+			devInfo.cbSize = sizeof(SP_DEVINFO_DATA);
+			BOOL ret = SetupDiEnumDeviceInfo(hDevInfoSet, nIndex, &devInfo);
+			if(ret)
+			{
+				BOOL bAdded = FALSE;
+				HKEY hKey = NULL;
+				hKey = SetupDiOpenDevRegKey(hDevInfoSet, &devInfo, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_QUERY_VALUE);
+				if(hKey != INVALID_HANDLE_VALUE)
+				{
+					int nPort = 0;
+					int queried = query_registry_for_port_name(hKey, &nPort);
+					if(queried == TRUE)
+					{
 						if(verbose == TRUE)
 						{
 							_tprintf("nPort = %d", nPort);
 						}
-                        bAdded = TRUE;
+						bAdded = TRUE;
 						list = (int*)realloc(list, sizeof(int) * (cnt + 1));
 						if(list == NULL)
 						{
@@ -140,20 +140,20 @@ int sp_query(int** port_number_list, int* port_cnt)
 						}
 						list[cnt] = nPort;
 						cnt++;
-                    }
-                }
-                if(bAdded == TRUE)
-                {
-                    char buf[8192] = {'\0'};
-                    size_t len = 0;
-                    BOOL queried = query_device_description(hDevInfoSet, &devInfo, buf, sizeof(buf), &len);
-                    if(queried == TRUE)
-                    {
+					}
+				}
+				if(bAdded == TRUE)
+				{
+					char buf[8192] = {'\0'};
+					size_t len = 0;
+					BOOL queried = query_device_description(hDevInfoSet, &devInfo, buf, sizeof(buf), &len);
+					if(queried == TRUE)
+					{
 						if(verbose == TRUE)
 						{
 							_tprintf("; sFriendlyName = %s\n", buf);
 						}
-                    }
+					}
 					else
 					{
 						if(verbose == TRUE)
@@ -161,22 +161,22 @@ int sp_query(int** port_number_list, int* port_cnt)
 							_tprintf("\n");
 						}
 					}
-                }
-            }
-            else
-            {
-                bMoreItems = ret;
-            }
-            ++nIndex;
-        }
+				}
+			}
+			else
+			{
+				bMoreItems = ret;
+			}
+			++nIndex;
+		}
 
-        SetupDiDestroyDeviceInfoList(hDevInfoSet);
+		SetupDiDestroyDeviceInfoList(hDevInfoSet);
 
 		*port_number_list = list;
 		*port_cnt = cnt;
 
 		ret = 0;
-    } while(0);
+	} while(0);
 	if(port_number_list != NULL && *port_number_list != NULL)
 	{
 		free(*port_number_list);

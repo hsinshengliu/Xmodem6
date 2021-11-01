@@ -66,12 +66,13 @@ int main(int argc, char* argv[])
 	bool usage = (argc >= 2)?false:true;
 	unsigned long baud = 0;
 	int port_number = 0;
+	int waiting_time = 6;
 	bool is_query_only = false;
 	char fn[260] = {'\0'};
 	bool is_receiver = false;
 	bool is_xmodem_1k = false;
 	bool verbose = false;
-	const char* fmt = "b:f:p:rxvqkh";
+	const char* fmt = "b:f:p:w:rxvqkh";
 	bool has_error = false;
 	int opt = '\0';
 	while((opt = getopt(argc, argv, fmt)) != -1)
@@ -86,6 +87,11 @@ int main(int argc, char* argv[])
 			case 'p':
 			{
 				port_number = (int)strtoul(optarg, NULL, 0);
+			}
+			break;
+			case 'w':
+			{
+				waiting_time = (int)strtoul(optarg, NULL, 0);
 			}
 			break;
 			case 'f':
@@ -137,13 +143,14 @@ int main(int argc, char* argv[])
 	{
 		printf("xmodem6 [-h]\n");
 		printf("        [-q]\n");
-		printf("        [-v] [-p port_number] [-b baud_rate] [-f fn] [-r|-x] [-k]\n");
+		printf("        [-v] [-p port_number] [-b baud_rate] [-w waiting_time] [-f fn] [-r|-x] [-k]\n");
 		printf("\n");
 		printf("        -h             : show usage\n");
 		printf("        -q             : query existing serial port\n");
 		printf("        -v             : verbose\n");
 		printf("        -p port_number : specify serial port number, such as 6 (i.e. \\\\.\\COM6)\n");
 		printf("        -b baud_rate   : specify baud rate, such as 115200\n");
+		printf("        -w waiting_time: specify waiting time in seconds, such as 6\n");
 		printf("        -f fn          : specify the filename, such as input.txt or \"C:\\Users\\Leo\\Downloads\\sample data\\output.txt\"\n");
 		printf("        -r             : lauch xmodem receiver\n");
 		printf("        -x             : lauch xmodem transmitter\n");
@@ -170,7 +177,7 @@ int main(int argc, char* argv[])
 				int k = 0;
 				for(k = 0; k < port_cnt; k++)
 				{
-					log_dbg("port_number_list[%d] = %d\n", k, port_number_list[k]);
+					printf("port_number_list[%d] = %d\n", k, port_number_list[k]);
 				}
 			}
 			if(port_cnt > 0)
@@ -198,10 +205,11 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	log_info("is_query_only = %s; baud = %ld; port_number = %d; is_receiver = %s; is_xmodem_1k = %s, fn = %s\n",
+	log_info("is_query_only = %s; baud = %ld; port_number = %d; waiting_time = %d; is_receiver = %s; is_xmodem_1k = %s, fn = %s\n",
 		is_query_only==true?"true":"false",
 		baud,
 		port_number,
+		waiting_time,
 		is_receiver==true?"true":"false",
 		is_xmodem_1k==true?"true":"false",
 		fn);
@@ -222,11 +230,11 @@ int main(int argc, char* argv[])
 
 	if(is_receiver == true)
 	{
-		xret = xmodem_receive(hComm, fn, is_xfer_keep);
+		xret = xmodem_receive(hComm, waiting_time, fn, is_xfer_keep);
 	}
 	else
 	{
-		xret = xmodem_transmit(hComm, fn, is_xmodem_1k, is_xfer_keep);
+		xret = xmodem_transmit(hComm, waiting_time, fn, is_xmodem_1k, is_xfer_keep);
 	}
 
 	sp_close(hComm);
