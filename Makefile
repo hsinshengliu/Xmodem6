@@ -1,6 +1,6 @@
 #name: Xmodem6
 #description: an XMODEM implementation for Win-i386/amd64 command-prompt
-#platform: it is tested under MinGW-w64 (e.g. mingw32-make.exe)
+#platform: it is tested under MinGW-w64 and MSYS2
 
 TARGET := xmodem6
 
@@ -25,5 +25,5 @@ $(TARGET): $(OBJS)
 
 .PHONY: clean 
 clean:
-	del $(SRCS)\\*.o
-	del .\\$(TARGET).exe
+	rm $(SRCS)/*.o
+	rm $(TARGET).exe
