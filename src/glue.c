@@ -66,7 +66,10 @@ int main(int argc, char* argv[])
 	bool usage = (argc >= 2)?false:true;
 	unsigned long baud = 0;
 	int port_number = 0;
-	int waiting_time = 6;
+	const short WAITING_TIME_MIN = 1;
+	const short WAITING_TIME_MAX = 1*60*60;
+	const short WAITING_TIME_DFT = 6;
+	short waiting_time = WAITING_TIME_DFT;
 	bool is_query_only = false;
 	char fn[260] = {'\0'};
 	bool is_receiver = false;
@@ -91,7 +94,11 @@ int main(int argc, char* argv[])
 			break;
 			case 'w':
 			{
-				waiting_time = (int)strtoul(optarg, NULL, 0);
+				waiting_time = (short)strtol(optarg, NULL, 0);
+				if(waiting_time < WAITING_TIME_MIN || waiting_time > WAITING_TIME_MAX)
+				{
+					has_error = true;
+				}
 			}
 			break;
 			case 'f':
@@ -150,7 +157,7 @@ int main(int argc, char* argv[])
 		printf("        -v             : verbose\n");
 		printf("        -p port_number : specify serial port number, such as 6 (i.e. \\\\.\\COM6)\n");
 		printf("        -b baud_rate   : specify baud rate, such as 115200\n");
-		printf("        -w waiting_time: specify waiting time in seconds, such as 6\n");
+		printf("        -w waiting_time: specify waiting time in seconds (from %hd to %hd), such as %hd (by default)\n", WAITING_TIME_MIN, WAITING_TIME_MAX, WAITING_TIME_DFT);
 		printf("        -f fn          : specify the filename, such as input.txt or \"C:\\Users\\Leo\\Downloads\\sample data\\output.txt\"\n");
 		printf("        -r             : lauch xmodem receiver\n");
 		printf("        -x             : lauch xmodem transmitter\n");

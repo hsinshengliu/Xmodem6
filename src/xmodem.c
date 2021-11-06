@@ -200,6 +200,7 @@ static int data_block_load(struct data_block_t** root, const char* fn, const siz
 		fp = fopen(fn, "rb");
 		if(fp == NULL)
 		{
+			xmodem_printf("[%s] error!\n", __FUNCTION__);
 			break;
 		}
 		struct data_block_t* last = NULL;
@@ -396,7 +397,7 @@ static uint16_t crc_calculate(uint8_t *ptr, short count)
     return (crc);
 }
 
-int xmodem_receive(const HANDLE hComm, const int ind_time, const char* fnrcv, xmodem_keep_xfer_cb keep_xfer_cb)
+int xmodem_receive(const HANDLE hComm, const short ind_time, const char* fnrcv, xmodem_keep_xfer_cb keep_xfer_cb)
 {
 	const char* fn = (fnrcv == NULL || strlen(fnrcv) == 0)?("default_out.txt"):(fnrcv);
 	struct data_block_t* dbrcv = NULL;
@@ -435,7 +436,7 @@ int xmodem_receive(const HANDLE hComm, const int ind_time, const char* fnrcv, xm
 			case xmodem_state_initial:
 			{
 				state_curr = xmodem_state_indicate;
-				ind_retry_count = (ind_time == 0)?(1*XMODEM_INDICATE_MULTIPLICATION):(ind_time*XMODEM_INDICATE_MULTIPLICATION);
+				ind_retry_count = ind_time*XMODEM_INDICATE_MULTIPLICATION;
 			}
 			break;
 			case xmodem_state_indicate:
@@ -827,7 +828,7 @@ int xmodem_receive(const HANDLE hComm, const int ind_time, const char* fnrcv, xm
 	return (state_curr == xmodem_state_success)?(0):(-1);
 }
 
-int xmodem_transmit(const HANDLE hComm, const int ind_time, const char* fnxmt, const bool xmodem_1k, xmodem_keep_xfer_cb keep_xfer_cb)
+int xmodem_transmit(const HANDLE hComm, const short ind_time, const char* fnxmt, const bool xmodem_1k, xmodem_keep_xfer_cb keep_xfer_cb)
 {
 	const char* fn = (fnxmt == NULL || strlen(fnxmt) == 0)?("default_in.txt"):(fnxmt);
 	struct data_block_t* dbxmt = NULL;
@@ -870,7 +871,7 @@ int xmodem_transmit(const HANDLE hComm, const int ind_time, const char* fnxmt, c
 				{
 					state_prev = state_curr;
 					state_curr = xmodem_state_wait;
-					ind_retry_count = (ind_time == 0)?(1*XMODEM_INDICATE_MULTIPLICATION):(ind_time*XMODEM_INDICATE_MULTIPLICATION);
+					ind_retry_count = ind_time*XMODEM_INDICATE_MULTIPLICATION;
 				}
 				else
 				{
