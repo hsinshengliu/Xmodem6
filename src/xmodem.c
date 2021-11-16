@@ -114,11 +114,11 @@ static int data_block_release(struct data_block_t** root)
 	struct data_block_t* iter = *root;
 	while(iter != NULL)
 	{
-		struct data_block_t* temp = iter;
+		struct data_block_t* temp = iter->next;
 		//xmodem_printf("data = %p, itself = %p\n", iter->data, iter);
 		free(iter->data);
 		free(iter);
-		iter = temp->next;
+		iter = temp;
 	}
 	*root = NULL;
 	return 0;
